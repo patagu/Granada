@@ -353,6 +353,8 @@ class ORM implements ArrayAccess {
             case 'sybase':
             case 'firebird':
                 return '"';
+            case 'odbc':
+                return '';
             case 'mysql':
             case 'sqlite':
             case 'sqlite2':
@@ -692,7 +694,7 @@ class ORM implements ArrayAccess {
      */
     public function find_result_set() {
         $resultSetClass = $this->resultSetClass;
-        if(is_a($resultSetClass, 'Granada\ResultSet', true)){
+        if(is_a($resultSetClass, 'Granada\ResultSet')){//, true)){
             $result = new $resultSetClass($this->_find_many());
         }
         else{
@@ -2116,6 +2118,6 @@ class ORM implements ArrayAccess {
     {
         $method = strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $name));
 
-        return call_user_func_array(array(self, $method), $arguments);
+        return call_user_func_array(array(__CLASS__, $method), $arguments);
     }
 }
