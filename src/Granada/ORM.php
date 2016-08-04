@@ -66,6 +66,7 @@ class ORM implements ArrayAccess {
     // Limit clause style
     const LIMIT_STYLE_TOP_N = "top";
     const LIMIT_STYLE_LIMIT = "limit";
+    const LIMIT_STYLE_FIRST = "first";
 
     // ------------------------ //
     // --- CLASS PROPERTIES --- //
@@ -371,6 +372,8 @@ class ORM implements ArrayAccess {
      */
     protected static function _detect_limit_clause_style($connection_name) {
         switch(self::get_db($connection_name)->getAttribute(PDO::ATTR_DRIVER_NAME)) {
+            case 'odbc':
+                return ORM::LIMIT_STYLE_FIRST;
             case 'sqlsrv':
             case 'dblib':
             case 'mssql':
@@ -1525,9 +1528,12 @@ class ORM implements ArrayAccess {
         $fragment = 'SELECT ';
         $result_columns = join(', ', $this->_result_columns);
 
-        if (!is_null($this->_limit) &&
-            self::$_config[$this->_connection_name]['limit_clause_style'] === ORM::LIMIT_STYLE_TOP_N) {
-            $fragment .= "TOP {$this->_limit} ";
+        if (!is_null($this->_limit)) {
+            if (self::$_config[$this->_connection_name]['limit_clause_style'] === ORM::LIMIT_STYLE_TOP_N) {
+                $fragment .= "TOP {$this->_limit} ";
+            } else if (self::$_config[$this->_connection_name]['limit_clause_style'] === ORM::LIMIT_STYLE_FIRST) {
+                $fragment .= "FIRST {$this->_limit} ";
+            }
         }
 
         if ($this->_distinct) {
@@ -1916,7 +1922,8 @@ class ORM implements ArrayAccess {
         if ($this->_is_new) {
             $this->_is_new = false;
             if (is_null($this->id())) {
-                if(self::$_db[$this->_connection_name]->getAttribute(PDO::ATTR_DRIVER_NAME) == 'pgsql') {
+                if(self::$_db[$this->_connection_name]->getAttribute(PDO::ATTR_DRIVER_NAME) == 'pgsql'
+                    || self::$_db[$this->_connection_name]->getAttribute(PDO::ATTR_DRIVER_NAME) == 'odbc') {
                     $this->_data[$this->_get_id_column_name()] = self::get_last_statement()->fetchColumn();
                 } else {
                     $this->_data[$this->_get_id_column_name()] = self::$_db[$this->_connection_name]->lastInsertId();
