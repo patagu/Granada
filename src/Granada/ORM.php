@@ -463,6 +463,15 @@ class ORM implements ArrayAccess {
         }
 
         if (count($parameters) > 0) {
+            // Flatten arrays from compound table-ids if any
+            foreach ($parameters as $i => $parameter) {
+                if (is_array($parameter)) {
+                    foreach ($parameter as $param) {
+                        array_push($parameters, $param);
+                    }
+                    unset($parameters[$i]);
+                }
+            }
             // Escape the parameters
             $parameters = array_map(array(self::$_db[$connection_name], 'quote'), $parameters);
 
@@ -1670,9 +1679,13 @@ class ORM implements ArrayAccess {
      * also deal with dot-separated identifiers eg table.column
      */
     protected function _quote_identifier($identifier) {
-        $parts = explode('.', $identifier);
-        $parts = array_map(array($this, '_quote_identifier_part'), $parts);
-        return join('.', $parts);
+        if (!is_array($identifier)) {
+            $parts = explode('.', $identifier);
+            $parts = array_map(array($this, '_quote_identifier_part'), $parts);
+            return join('.', $parts);
+        } else {
+            return $identifier;
+        }
     }
 
     /**
@@ -1805,6 +1818,7 @@ class ORM implements ArrayAccess {
     /**
      * Return the name of the column in the database table which contains
      * the primary key ID of the row.
+     * EDIT: can be an array for pks consisting of many columns.
      */
     protected function _get_id_column_name() {
         if (!is_null($this->_instance_id_column)) {
@@ -1818,9 +1832,19 @@ class ORM implements ArrayAccess {
 
     /**
      * Get the primary key ID of this object.
+     * EDIT: can be an array for compound primary keys.
      */
     public function id() {
-        return $this->get($this->_get_id_column_name());
+        $colNames = $this->_get_id_column_name();
+        if (!is_array($colNames)) {
+            return $this->get($colNames);
+        } else {
+            $idValues = array();
+            foreach ($colNames as $colName) {
+                $idValues[] = $this->get($colName);
+            }
+            return $idValues;
+        }
     }
 
     /**
@@ -1911,6 +1935,16 @@ class ORM implements ArrayAccess {
                 }
                 $query = $this->_build_update();
                 $values[] = $this->id();
+                // if compound id, flatten array into individual values
+                foreach ($values as $i => $value) {
+                    if (is_array($value)) {
+                        $pos = $i;
+                        foreach ($value as $val) {
+                            $values[$pos] = $val;
+                            $pos++;
+                        }
+                    }
+                }
             } else { // INSERT
                 $query = $this->_build_insert();
             }
@@ -1951,8 +1985,17 @@ class ORM implements ArrayAccess {
         }
         $query[] = join(", ", $field_list);
         $query[] = "WHERE";
-        $query[] = $this->_quote_identifier($this->_get_id_column_name());
-        $query[] = "= ?";
+        $idColumnNames = $this->_get_id_column_name();
+        if (!is_array($idColumnNames)) {
+            $query[] = $this->_quote_identifier($this->_get_id_column_name());
+            $query[] = "= ?";
+        } else {
+            $subquery = array();
+            foreach($idColumnNames as $idColName) {
+                $subquery[] = $this->_quote_identifier($idColName).' = ? ';
+            }
+            $query[] = implode(" AND ", $subquery);
+        }
         return join(" ", $query);
     }
 
