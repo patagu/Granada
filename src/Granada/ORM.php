@@ -2044,10 +2044,10 @@ class ORM implements ArrayAccess {
      */
     public function delete() {
 
-        $id_column = $this->_get_id_column_name();
+        $id_column = $this->_quote_identifier($this->_get_id_column_name());
         if (is_array($id_column)) {
             foreach($id_column as $key) {
-                $statement[] = $key.' = ?';
+                $statement[] = $this->_quote_identifier($key).' = ?';
             }
             $id_column = implode(" AND ", $statement);
         } else {
