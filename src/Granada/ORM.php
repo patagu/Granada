@@ -2043,15 +2043,25 @@ class ORM implements ArrayAccess {
      * Delete this record from the database
      */
     public function delete() {
+
+        $id_column = $this->_get_id_column_name();
+        if (is_array($id_column)) {
+            foreach($id_column as $key) {
+                $statement[] = $key.' = ?';
+            }
+            $id_column = implode(" AND ", $statement);
+        } else {
+            $id_column .= ' = ?';
+        }
+
         $query = join(" ", array(
             "DELETE FROM",
             $this->_quote_identifier($this->_table_name),
             "WHERE",
-            $this->_quote_identifier($this->_get_id_column_name()),
-            "= ?",
+            $id_column
         ));
-
-        return self::_execute($query, array($this->id()), $this->_connection_name);
+        $id = is_array($this->id()) ? $this->id() : array($this->id());
+        return self::_execute($query, $id, $this->_connection_name);
     }
 
     /**
