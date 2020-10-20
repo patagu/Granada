@@ -49,7 +49,7 @@ class ResultSet implements ArrayAccess, Countable, IteratorAggregate {
     }
 
     /**
-     * Get the current result set as an array
+     * Get the current result set as json
      * @return string
      */
     public function as_json() {
