@@ -67,7 +67,7 @@ ORM::configure('password', 'top_secret');
 As always, you can check it in detail on [Paris documentation](http://idiorm.readthedocs.org/en/latest/configuration.html#setup)
 
 
-Aditions
+Additions
 --------
 
 ### Eager loading
