@@ -281,7 +281,7 @@ class ORM implements ArrayAccess {
     }
 
    /**
-    * Ensures configuration (mulitple connections) is at least set to default.
+    * Ensures configuration (multiple connections) is at least set to default.
     * @param string $connection_name Which connection to use
     */
     protected static function _setup_db_config($connection_name) {
@@ -808,7 +808,7 @@ class ORM implements ArrayAccess {
      * This will usually be called only from inside the class,
      * but it's public in case you need to call it directly.
      */
-    public function hydrate($data=array()) {
+    public function hydrate($data = array()) {
         $this->_data = $data;
         return $this;
     }
@@ -871,7 +871,7 @@ class ORM implements ArrayAccess {
      * the alias to return the column as.
      * @param string $alias
      */
-    public function select($column, $alias=null) {
+    public function select($column, $alias = null) {
         $columns = array_map('trim',explode(',',$column));
         foreach($columns as $column){
             $column = $this->_quote_identifier($column);
@@ -885,7 +885,7 @@ class ORM implements ArrayAccess {
      * by the SELECT query. The second optional argument is
      * the alias to return the column as.
      */
-    public function select_expr($expr, $alias=null) {
+    public function select_expr($expr, $alias = null) {
         return $this->_add_result_column($expr, $alias);
     }
 
@@ -1005,7 +1005,7 @@ class ORM implements ArrayAccess {
      * The final (optional) argument specifies an alias for the joined table.
      * @param string $join_operator
      */
-    protected function _add_join_source($join_operator, $table, $constraint, $table_alias=null) {
+    protected function _add_join_source($join_operator, $table, $constraint, $table_alias = null) {
 
         $join_operator = trim("{$join_operator} JOIN");
 
@@ -1033,7 +1033,7 @@ class ORM implements ArrayAccess {
      * Add a simple JOIN source to the query
      * @param string $table_alias
      */
-    public function join($table, $constraint, $table_alias=null) {
+    public function join($table, $constraint, $table_alias = null) {
         return $this->_add_join_source("", $table, $constraint, $table_alias);
     }
 
@@ -1042,7 +1042,7 @@ class ORM implements ArrayAccess {
      * @param string $table
      * @param string[] $constraint
      */
-    public function inner_join($table, $constraint, $table_alias=null) {
+    public function inner_join($table, $constraint, $table_alias = null) {
         return $this->_add_join_source("INNER", $table, $constraint, $table_alias);
     }
 
@@ -1051,7 +1051,7 @@ class ORM implements ArrayAccess {
      * @param string $table
      * @param string[] $constraint
      */
-    public function left_outer_join($table, $constraint, $table_alias=null) {
+    public function left_outer_join($table, $constraint, $table_alias = null) {
         return $this->_add_join_source("LEFT OUTER", $table, $constraint, $table_alias);
     }
 
@@ -1060,7 +1060,7 @@ class ORM implements ArrayAccess {
      * @param string $table
      * @param string[] $constraint
      */
-    public function right_outer_join($table, $constraint, $table_alias=null) {
+    public function right_outer_join($table, $constraint, $table_alias = null) {
         return $this->_add_join_source("RIGHT OUTER", $table, $constraint, $table_alias);
     }
 
@@ -1069,14 +1069,14 @@ class ORM implements ArrayAccess {
      * @param string $table
      * @param string[] $constraint
      */
-    public function full_outer_join($table, $constraint, $table_alias=null) {
+    public function full_outer_join($table, $constraint, $table_alias = null) {
         return $this->_add_join_source("FULL OUTER", $table, $constraint, $table_alias);
     }
 
     /**
      * Internal method to add a HAVING condition to the query
      */
-    protected function _add_having($fragment, $values=array()) {
+    protected function _add_having($fragment, $values = array()) {
         return $this->_add_condition('having', $fragment, $values);
     }
 
@@ -1091,7 +1091,7 @@ class ORM implements ArrayAccess {
     /**
      * Internal method to add a WHERE condition to the query
      */
-    protected function _add_where($fragment, $values=array()) {
+    protected function _add_where($fragment, $values = array()) {
         return $this->_add_condition('where', $fragment, $values);
     }
 
@@ -1106,7 +1106,7 @@ class ORM implements ArrayAccess {
     /**
      * Internal method to add a HAVING or WHERE condition to the query
      */
-    protected function _add_condition($type, $fragment, $values=array()) {
+    protected function _add_condition($type, $fragment, $values = array()) {
         $conditions_class_property_name = "_{$type}_conditions";
         if (!is_array($values)) {
             $values = array($values);
@@ -1290,7 +1290,7 @@ class ORM implements ArrayAccess {
      * to the parameters supplied in the second argument.
      * @param string $clause
      */
-    public function where_raw($clause, $parameters=array()) {
+    public function where_raw($clause, $parameters = array()) {
         return $this->_add_where($clause, $parameters);
     }
 
@@ -2153,8 +2153,7 @@ class ORM implements ArrayAccess {
     public function __call($name, $arguments)
     {
         $method = strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $name));
-        //return call_user_func_array(array($this, $method), $arguments);
-
+        
         if (method_exists($this, $method)) {
             return call_user_func_array(array($this, $method), $arguments);
         } else {
